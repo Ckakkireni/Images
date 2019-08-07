@@ -1,0 +1,146 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DateDiffBusinessLayer
+{
+    /// <summary>
+    /// This Class will deal with Date operations
+    /// </summary>
+    public class DateCal
+    {
+
+        int[] Months = new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 31, 30, 31, 31 };
+        public DateCal()
+        {
+
+        }
+
+        /// <summary>
+        /// This Method will help to Identify No of Days in beween given two Dates.
+        /// </summary>
+        /// <param name="objStartDate">Start Date</param>
+        /// <param name="objEnddate">End Date</param>
+        /// <returns></returns>
+        public int CalculateDays(DateTime objStartDate, DateTime objEnddate)
+        {
+            int noofDays = 0;
+
+            #region ActualLogic
+            if (objStartDate > objEnddate || objStartDate == objEnddate)
+            {
+                return 0;
+            }
+
+            int StartYear = objStartDate.Year;
+            int StartMonth = objStartDate.Month;
+            int StartDay = objStartDate.Day;
+
+            int EndYear = objEnddate.Year;
+            int EndMonth = objEnddate.Month;
+            int EndDay = objEnddate.Day;
+
+            if (StartYear == EndYear)
+            {
+                noofDays += calculateNoodaysInSameYear(StartDay, StartMonth, EndDay, EndMonth);
+                if(EndMonth > 1 && (StartYear/4 == 0))
+                {
+                    noofDays +=1;
+                }
+            }
+            else
+            {
+                if (StartMonth == 1 && StartDay == 1 && EndMonth == 12 && EndDay == 31)
+                {
+                    noofDays += CalculateNoofdaysYears(StartYear, EndYear);
+                }
+                else if (StartMonth == 1 && StartDay == 1)
+                {
+                    noofDays += CalculateNoofdaysYears(StartYear, EndYear - 1);
+                    noofDays += calculateNoofDaysinEndYear(EndDay, EndMonth, EndYear);
+                }
+                else if (EndMonth == 12 && EndDay == 31)
+                {
+                    noofDays += calculateNoofDaysinStartYear(StartDay, StartMonth, StartYear);
+                    noofDays += CalculateNoofdaysYears(StartYear + 1, EndYear);
+                }
+                else
+                {
+                    noofDays += calculateNoofDaysinStartYear(StartDay, StartMonth, StartYear);//327
+                    noofDays += CalculateNoofdaysYears(StartYear + 1, EndYear - 1);//730
+                    noofDays += calculateNoofDaysinEndYear(EndDay, EndMonth, EndYear);//219
+                }
+            }
+
+
+            #endregion ActualLogic
+
+            return noofDays;
+        }
+
+        int CalculateNoofdaysYears(int StartYear, int EndYear)
+        {
+            int Days = 0;
+            do
+            {
+                Days += (StartYear / 4 == 0 ? 365 : 364);
+                StartYear++;
+            }
+            while (StartYear <= EndYear);
+            return Days;
+        }
+
+        int calculateNoofDaysinEndYear(int EndDay, int EndMonth, int EndYear)
+        {
+            int Days = 0;
+
+            for (int i = 0; i < EndMonth - 1; i++)
+            {
+                Days += Months[i];
+            }
+            Days += EndDay;
+            if (EndYear / 4 == 0 && EndMonth > 2)
+            {
+                Days += 1;
+            }
+            return Days;
+        }
+
+        int calculateNoofDaysinStartYear(int StartDay, int StartMonth, int StartYear)
+        {
+            int Days = 0;
+
+            for (int i = StartMonth + 1; i <= 12; i++)
+            {
+                Days += Months[i - 1];
+            }
+            Days += (Months[StartMonth - 1] - StartDay) + 1;
+            if (StartYear / 4 == 0 && StartMonth > 1)
+            {
+                Days += 1;
+            }
+            return Days;
+        }
+
+        int calculateNoodaysInSameYear(int StartDay, int StartMonth, int EndDay, int EndMonth)
+        {
+            int Days = 0;
+            if (StartMonth == EndMonth)
+            {
+                Days += (EndDay - StartDay) + 1;
+            }
+            else
+            {
+                Days += (Months[StartMonth - 1] - StartDay) + 1;
+                for (int i = StartMonth + 1; i < EndMonth; i++)
+                {
+                    Days += Months[StartMonth - 1];
+                }
+                Days += (Months[EndMonth - 1] - EndDay) + 1;
+            }
+            return Days;
+        }
+    }
+}
